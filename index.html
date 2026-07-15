@@ -568,8 +568,9 @@ function ambientLoop(){ if(!AU.ctx||G.over)return;
 
 /* ---------- THREE ---------- */
 const canvas=document.getElementById('c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);
+const IS_MOBILE = (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) || Math.min(innerWidth,innerHeight)<900;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(IS_MOBILE ? 1 : Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x010203);
 scene.fog=new THREE.FogExp2(0x03050a,.05);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.08,110);camera.rotation.order='YXZ';scene.add(camera);
@@ -3768,6 +3769,21 @@ function autoDoors(){
 /* ---------- 루프 ---------- */
 const clkEl=document.getElementById('clock'),tmEl=document.getElementById('timer'),flEl=document.getElementById('floorTag');
 const RM={0:['체육관','화장실'],1:['2학년 3반','도서실'],2:['과학실','방송실']};
+/* ===== 성능 최적화: 근접 점광원만 켜기 (모바일 GPU 부하↓) =====
+   씬의 점광원이 40개가 넘어 프래그먼트당 조명 계산이 과도 → 디벗에서 렉.
+   플레이어와 가까운 MAXPL개만 visible로 유지(개수 고정 → 셰이더 재컴파일 없음). */
+const allPL=[]; scene.traverse(o=>{ if(o.isPointLight) allPL.push(o); });
+const MAXPL = IS_MOBILE ? 7 : 18;
+let cullAcc = 0;
+function cullLights(){
+ const cx=camera.position.x, cy=camera.position.y, cz=camera.position.z;
+ for(const L of allPL){ const dx=L.position.x-cx,dy=L.position.y-cy,dz=L.position.z-cz;
+   L.userData._d = dx*dx+dy*dy+dz*dz; }
+ allPL.sort((a,b)=>a.userData._d-b.userData._d);
+ for(let i=0;i<allPL.length;i++){ const v=(i<MAXPL); if(allPL[i].visible!==v) allPL[i].visible=v; }
+}
+camera.position.set(Pl.x,Pl.y+EYE,Pl.z); cullLights();   // 첫 프레임부터 컬링 적용
+
 let last=performance.now(),stepAcc=0,hb=0,br=0;
 let bounceT=0, bouncePat=0;
 function loop(now){
@@ -3932,6 +3948,7 @@ function loop(now){
  }
  camera.position.set(Pl.x,Pl.y+EYE+Math.sin(Pl.bob)*.04,Pl.z);
  camera.rotation.y=Pl.yaw;camera.rotation.x=Pl.pitch;
+ cullAcc+=dt; if(cullAcc>0.2){ cullAcc=0; cullLights(); }
  renderer.render(scene,camera);
 }
 requestAnimationFrame(loop);
