@@ -268,7 +268,7 @@ const G={started:false,over:false,uiOpen:false,seconds:30*60,
   sci:{prep:0,cab:0,items:0,picked:'',crafted:'',head:0,clear:0,
    clueRead:0,posterRead:0,entered:0},
   bro:{entered:0,on:0,solved:0,freq:1,amp:1,wave:0,posterRead:0},
-  hall:{mirrorSeen:0,selfShot:0}};
+  hall:{mirrorSeen:0,selfShot:0,arrived:0}};
 const FL=[0,3.9,7.8], EYE=1.62, FN=['1F','2F','3F'];
 const SPOTS=[
  {id:'lib',name:'도서실'},{id:'gym',name:'체육관'},{id:'sci',name:'과학실'},
@@ -3435,11 +3435,13 @@ function openHallMirror(){
  mb.innerHTML=`<h2>거울</h2>
   <div class="story">뿌옇게 김이 서린 거울 앞에 선다.
 
-그런데 — <b>거울 속엔 아무도 없다.</b>
+그런데 — <b>거울에 내가 보이지 않는다.</b>
 텅 빈 현관만 비칠 뿐, 내 모습이 없다.
 
-…이 원 안에서, 끝까지 <b>기록되지 않은 것</b>.
-현실이 아닌 것은 — <b>나였다.</b></div>
+…혹시, <b>내가 현실 세계에 없는 것…?</b>
+
+이 원 안에서 끝까지 <b>기록되지 않은 것</b>은 —
+바로 <b>나였다.</b></div>
   <div class="clue"><b>카메라</b>를 켜면 <b>셀프 촬영</b>으로 바뀐다.
 스스로를 사진에 담아야, 원이 나를 뱉어낸다.</div>
   <button class="btn accent" onclick="closeModal('hallmirror')">카메라를 꺼낸다</button>`;
@@ -3918,6 +3920,12 @@ function loop(now){
     G.bro.entered=1; sWhis();
     toast('꺼져 있던 방송 장비에서, 저절로 목소리가 흘러나온다…');
     setObj('방송 장비를 조사하고, 오실로스코프 콘솔을 살펴보자');
+   }
+   // 중앙현관 도착 안내 (사진 4장 완료 후) — 거울을 살펴보라
+   if(!G.hall.arrived && !G.hall.selfShot && Pl.level===0 && Pl.z<7.6 && photoCount()>=4){
+    G.hall.arrived=1; sWhis();
+    toast('중앙현관 — 문은 잠겨 있다. 옆의 거울을 살펴보자.');
+    setObj('옆의 거울을 살펴보자 — 마지막 한 장의 힌트가 있을 것 같다');
    }
    autoDoors(); upTarget();
   } else pr.style.display='none';
