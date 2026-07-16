@@ -12,10 +12,12 @@
 
   #hud { position:fixed; inset:0; pointer-events:none; z-index:10; color:#d9d4c5; }
   #topbar { position:absolute; top:0; left:0; right:0; padding:8px 12px; display:flex; justify-content:space-between;
-            align-items:flex-start; background:linear-gradient(180deg, rgba(0,0,0,.65), transparent); }
-  #timer { font-size:26px; font-weight:bold; color:#f2d478; letter-spacing:2px; }
-  #timer.danger { color:#ff4a55; animation:pulse 1s infinite; }
-  #clock { font-size:10px; color:#5f7568; letter-spacing:2px; }
+            align-items:flex-start; background:linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.35) 60%, transparent); }
+  #timer { font-size:38px; font-weight:bold; color:#ffe07a; letter-spacing:2px;
+           text-shadow:0 0 2px #000, 0 0 8px rgba(0,0,0,.95), 0 2px 4px #000; }
+  #timer.danger { color:#ff5a63; animation:pulse 1s infinite;
+                  text-shadow:0 0 2px #000, 0 0 10px rgba(255,40,50,.6), 0 2px 4px #000; }
+  #clock { font-size:11px; color:#8fa89a; letter-spacing:2px; text-shadow:0 1px 3px #000; }
   #floorTag { font-size:11px; color:#a8d8c0; letter-spacing:2px; margin-top:2px; }
   #photoMission { margin-top:7px; font-size:11.5px; color:#f2d478; letter-spacing:.5px; font-weight:bold;
                   text-shadow:0 0 7px #000, 0 0 2px #000; max-width:220px; line-height:1.4;
@@ -171,6 +173,17 @@
   #vfinder.self .c { border-color:#ff9fb0; }
   #vfinder.self .rec { color:#ff9fb0; }
   #vfinder.self .frame { border-color:rgba(255,159,176,.5); }
+  /* 셀카모드 — 흐릿한 내 얼굴 */
+  #vfinder .selfface { position:absolute; left:50%; top:52%; transform:translate(-50%,-50%);
+                       width:150px; height:200px; display:none; filter:blur(5px); opacity:.8;
+                       animation:selfsway 4.6s ease-in-out infinite; }
+  #vfinder.selfmode .selfface { display:block; }
+  @keyframes selfsway { 0%,100%{ transform:translate(-50%,-50%) scale(1) } 50%{ transform:translate(-50%,-51.5%) scale(1.035) } }
+  #selfBtn { position:fixed; right:22px; bottom:210px; z-index:14; display:none;
+             border:2px solid #ff9fb0; color:#ff9fb0; background:rgba(30,12,18,.62);
+             border-radius:22px; font-family:inherit; font-size:13px; letter-spacing:2px;
+             padding:10px 16px; cursor:pointer; }
+  #selfBtn.on { background:rgba(255,159,176,.24); }
   #shootBtn { position:fixed; right:26px; bottom:126px; width:70px; height:70px; border-radius:50%; z-index:14;
               display:none; border:2px solid #f2d478; color:#f2d478; background:rgba(30,24,10,.65);
               font-family:inherit; font-size:22px; cursor:pointer; }
@@ -216,11 +229,20 @@
   <div class="c" style="left:-2px;bottom:-2px;border-right:0;border-top:0"></div>
   <div class="c" style="right:-2px;bottom:-2px;border-left:0;border-top:0"></div>
   <div class="rec">● 촬영 대기</div>
+  <div class="selfface"><svg viewBox="0 0 150 200" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="75" cy="150" rx="60" ry="46" fill="#3a4550" opacity="0.45"/>
+    <ellipse cx="75" cy="94" rx="50" ry="64" fill="#c2cbc8" opacity="0.55"/>
+    <ellipse cx="56" cy="88" rx="11" ry="16" fill="#080b0e" opacity="0.85"/>
+    <ellipse cx="95" cy="90" rx="11" ry="16" fill="#080b0e" opacity="0.85"/>
+    <path d="M55 96 Q54 116 60 132" stroke="#5a2e34" stroke-width="3" fill="none" opacity="0.5"/>
+    <path d="M96 98 Q98 118 92 134" stroke="#5a2e34" stroke-width="3" fill="none" opacity="0.4"/>
+    <path d="M56 150 Q75 162 96 150" stroke="#0a0d10" stroke-width="4" fill="none" opacity="0.7"/>
+  </svg></div>
 </div></div>
 
 <div id="hud">
   <div id="topbar">
-    <div><div id="timer">30:00</div><div id="clock">현재 00:14 · 봉쇄 00:44</div><div id="floorTag">2F · 2학년 3반</div><div id="photoMission">📷 현실이 아닌 것을 사진으로 찍어라 <span class="cnt">0/4</span></div></div>
+    <div><div id="timer">60:00</div><div id="clock">현재 00:14 · 봉쇄 01:14</div><div id="floorTag">2F · 2학년 3반</div><div id="photoMission">📷 뒤틀린 것을 사진으로 찍어라 <span class="cnt">0/4</span></div></div>
     <div id="frags"></div>
   </div>
   <div id="crosshair"></div>
@@ -228,7 +250,6 @@
 </div>
 
 <div id="dbgBox">
-  <input id="dbg" placeholder="1~5 / 이름" autocomplete="off" spellcheck="false">
   <span id="dbgHint">Shift+1 도서 · 2 체육 · 3 과학 · 4 방송 · 5 현관 (앞 방 자동클리어)</span>
 </div>
 <div id="prompt"></div>
@@ -237,6 +258,7 @@
 <button id="jumpBtn">점프<br>JUMP</button>
 <button id="invBtn" class="alert">🎒 가방 (I)</button>
 <button id="camBtn">📷 카메라</button>
+<button id="selfBtn">🤳 셀카 모드</button>
 <button id="shootBtn">📷</button>
 <div id="touchHint">이동: 왼쪽 드래그 · 시점: 화면 드래그 · PC: WASD/Space/Shift/E/I · 촬영: Q 누른 채 클릭</div>
 <div id="toast"></div>
@@ -259,7 +281,7 @@
 <script>
 /* ================= 00:44 — 검은 원 · v7 ================= */
 const BOOKTITLE='새벽 세 시의 서가';
-const G={started:false,over:false,uiOpen:false,seconds:30*60,
+const G={started:false,over:false,uiOpen:false,seconds:60*60,
   photos:{lib:0,gym:0,sci:0,bro:0,hall:0},
   fired:{},target:null,pending:null,jsCool:0,
   flashlight:false,camera:false,doorLocked:true,
@@ -287,12 +309,12 @@ const INTRO=[
 죽어 있던 스피커가 지지직거리며 켜진다.
 
 "…지금부터, 일곱 번째 수업을 시작하겠습니다.
- 출석을 부르겠습니다. 수업은 00시 44분에 끝납니다."
+ 출석을 부르겠습니다. 수업은 01시 14분에 끝납니다."
 
-원 안에는 — 현실에 없는 것들이 섞여 있다.
+원 안에는 — 뒤틀려 버린 것들이 섞여 있다.
 그것들을 전부 사진으로 남겨야, 원은 우리를 뱉어낸다.
 
-남은 시간 30분. 그리고 지금은, 아무것도 보이지 않는다.`];
+남은 시간 60분. 그리고 지금은, 아무것도 보이지 않는다.`];
 
 const READS={
  memo:{title:'관측 기록 — 검은 원',
@@ -301,12 +323,12 @@ const READS={
 『검은 원 관측 기록 (비공개)』
 
  1. 원은 삼킨 공간을 그대로 복제한다. 다만 조금씩, 틀리게.
- 2. 원 안에는 현실에 존재하지 않는 것이 섞여 든다.
+ 2. 원 안의 것들은 조금씩 뒤틀린 채로 섞여 든다.
  3. 원은 '기록된 것'을 삼키지 못한다.
  4. 되돌아온 유일한 생존자는, 카메라를 들고 있었다.
 
  마지막 줄은 다른 필체다.
- "현실이 아닌 것을 전부 찍어라. 그러면 문이 열린다."`},
+ "뒤틀린 것을 전부 찍어라. 그러면 문이 열린다."`},
  clock:{title:'벽시계',story:`초침이 00:14에서 부들부들 떨고 있다.
 앞으로도, 뒤로도 가지 못한 채.`},
  cork:{title:'복도 게시판',story:`『야간 출입 통제 안내』
@@ -796,9 +818,9 @@ const wboardTex=cv(512,384,(x,w,h)=>{x.fillStyle='#f2f4f2';x.fillRect(0,0,w,h);
  ['1) 도서관에서는 정숙한다.','2) 빌린 책은 반납 기간 내에 제출한다.','3) 다 읽은 책은 반납함에 가져다 둔다.','4) 관내 음식물 취식 금지.',
   '5) 관내에서 『'+BOOKTITLE+'』 라는'].forEach((s,i)=>x.fillText(s,36,102+i*36));
  x.fillText('    책을 발견하면, 그것은',36,102+5*36);
- x.fillText('    현실세계의 책이 아닌 것이다.',36,102+6*36);
+ x.fillText('    현실에서 뒤틀려 버린 책이다.',36,102+6*36);
  x.fillStyle='#b4342f';x.font="17px 'Malgun Gothic'";
- x.fillText('p.s) 컴퓨터 암호는 H₂O 야!',36,h-30);});
+ x.fillText('p.s) 컴퓨터 암호는 A TO H!',36,h-30);});
 const bookCoverTex=cv(256,384,(x,w,h)=>{
  const g=x.createLinearGradient(0,0,0,h);
  g.addColorStop(0,'#24344a');g.addColorStop(1,'#141d29');
@@ -1364,10 +1386,10 @@ const gymDoors={l:null,r:null,col:null,open:false};
 
  /* 바닥 표식 — 사각형의 '테두리'를 검게 칠해 자모를 만든다.
     윗칸=초성 / 가운뎃칸=중성 / 아랫칸=종성.  세로 3칸을 합쳐야 한 글자.
-      삼 = ㅅ(T·L·R) / ㅏ(L·중앙가로) / ㅁ(사각형 전체)
+      삼 = ㅅ(대각선 ∧) / ㅏ(L·중앙가로) / ㅁ(사각형 전체)
       구 = ㄱ(T·R)   / ㅜ(중앙가로·아래중앙세로) / (종성 없음)
       팔 = ㅍ(T·B·세로2개) / ㅏ / ㄹ(T·오른위·중앙가로·왼아래·B)
-      사 = ㅅ / ㅏ / (종성 없음)                       => 3 9 8 4          */
+      사 = ㅅ(대각선 ∧) / ㅏ / (종성 없음)                => 3 9 8 4          */
  const glyphTex=(function(){
   const S=256, CW=212, CH=214, PAD=(S-CW)/2, TOP=12;   // 열끼리는 띄고, 행끼리는 붙임
   const UW=S*4, UH=TOP+CH*3+12;
@@ -1389,9 +1411,12 @@ const gymDoors={l:null,r:null,col:null,open:false};
     case 'Llow':return [x0,my,x0,y1];
     case 'V1':  return [x0+CW/3,y0,x0+CW/3,y1];
     case 'V2':  return [x0+CW*2/3,y0,x0+CW*2/3,y1];
+    // ㅅ 전용 대각선 — 최종 렌더에서 ∧(ㅅ)로 보이도록 (정점 위-가운데)
+    case 'Sa':  return [mx,y0,x1,y1];   // 정점 → 오른쪽 아래 다리
+    case 'Sb':  return [mx,y0,x0,y1];   // 정점 → 왼쪽 아래 다리
    } return null; };
   const JAMO={
-   'ㅅ':['T','L','R'],
+   'ㅅ':['Sa','Sb'],
    'ㅏ':['L','H'],
    'ㅁ':['T','B','L','R'],
    'ㄱ':['T','R'],
@@ -1871,15 +1896,26 @@ let prepDoor=null, prepDoorCol=null;
  shw.position.set(-2.5,y+1.6,10.6); scene.add(shw);
  const shH=new THREE.Mesh(new THREE.CylinderGeometry(.16,.06,.10,12),steel);
  shH.position.set(-2.5,y+2.5,10.6); scene.add(shH);
- // 두개골 제작대 (실험대 -4.6, 12.4)
- const burnBase=box(-4.6,12.4,.44,.44,.10,
-   new THREE.MeshStandardMaterial({color:0x2a2f34,roughness:.6,metalness:.3}), y+.92, true);
+ // 두개골 제작대 (실험대 -4.6, 12.4) — 눈에 잘 띄도록 빛나는 받침
+ const craftMat=new THREE.MeshStandardMaterial({color:0x2b3a42,roughness:.4,metalness:.5,
+   emissive:0x1f9fb4,emissiveIntensity:.55});
+ const burnBase=box(-4.6,12.4,.52,.52,.14,craftMat, y+.92, true);
  it(burnBase,'burner','두개골 제작대');
  pulsers.push(burnBase);
+ // 발광 상판 링 — '여기 올려두라'는 신호
+ const burnRing=new THREE.Mesh(new THREE.TorusGeometry(.20,.03,10,30),
+   new THREE.MeshStandardMaterial({color:0x0d1a1e,emissive:0x3fdcec,emissiveIntensity:1.0,roughness:.35}));
+ burnRing.position.set(-4.6,y+1.03,12.4); burnRing.rotation.x=Math.PI/2; scene.add(burnRing);
+ // 제작대 조명 (은은한 청록빛 → 어둠 속에서도 바로 보임)
+ const burnL=new THREE.PointLight(0x63e6f6,1.05,3.6,2); burnL.position.set(-4.6,y+1.7,12.4); scene.add(burnL);
+ rLights.push(burnL);
+ // 안내 팻말
+ const bsg=pl(.66,.2,new THREE.MeshBasicMaterial({map:txt(['두개골 제작대'],{size:24,w:220,h:60}),transparent:true}));
+ bsg.position.set(-4.6,y+1.42,12.4); scene.add(bsg);
  // 인체모형 받침
  box(-11.0,17.4,.9,.9,.35,darkMat,y);
  const ssg=pl(.8,.24,new THREE.MeshBasicMaterial({map:txt(['인체모형'],{size:26,w:200,h:62})}));
- ssg.position.set(-11.0,y+.5,17.86); scene.add(ssg);
+ ssg.position.set(-11.0,y+.5,16.95); ssg.rotation.y=Math.PI; scene.add(ssg);
 
  /* --- 과학준비실 집기 --- */
  // 시약 선반 — 4단 × 7열(a~g). 뚜껑이 열린 병은 '재고 제외'
@@ -2117,7 +2153,7 @@ it(soundPoster,'soundposter','소리의 3요소 포스터');
 const spL=new THREE.PointLight(0xffe8c0,.3,3.4,2); spL.position.set(-8.3,y3+2.3,25.0); scene.add(spL);
 rLights.push(spL);
 
-/* --- CRT 모니터(현실에 없는 것) — 북쪽 벽 동쪽. 콘솔(서쪽)과 수직 → 시야 안 겹침 --- */
+/* --- CRT 모니터(뒤틀린 것) — 북쪽 벽 동쪽. 콘솔(서쪽)과 수직 → 시야 안 겹침 --- */
 const tvIdleTex=cv(300,240,(x,w,h)=>{
  x.fillStyle='#05070a'; x.fillRect(0,0,w,h);
  for(let i=0;i<2400;i++){const g=Math.random()*40; x.fillStyle=`rgba(${g},${g},${g+6},.5)`; x.fillRect(Math.random()*w,Math.random()*h,2,2);}
@@ -2258,43 +2294,76 @@ const headParts=[];
   const c=new THREE.Mesh(new THREE.SphereGeometry(.024-i*.002,12,10),boneDark);
   c.position.set(0,yy,.005); c.scale.set(1.1,.6,1); manne.add(c);}
 
- /* --- 두개골 (headParts: 완성 전 숨김) --- */
- const HY=spineTop+.20;                                       // 두개골 중심 높이
- const cranium=new THREE.Mesh(new THREE.SphereGeometry(.115,28,24),boneMat);
- cranium.position.set(0,HY+.02,0); cranium.scale.set(1,1.08,1.12); manne.add(cranium); headParts.push(cranium);
- // 이마~얼굴(위턱)
- const face=new THREE.Mesh(new THREE.SphereGeometry(.095,24,20),boneMat);
- face.position.set(0,HY-.05,.045); face.scale.set(.92,.85,.8); manne.add(face); headParts.push(face);
- // 광대뼈
- [-1,1].forEach(s=>{const z=new THREE.Mesh(new THREE.SphereGeometry(.028,12,10),boneMat);
-  z.position.set(s*.072,HY-.03,.075); z.scale.set(.8,.7,.7); manne.add(z); headParts.push(z);});
- // 아래턱 (U자)
- const jaw=new THREE.Mesh(new THREE.TorusGeometry(.062,.016,8,20,Math.PI*1.05),boneDark);
- jaw.position.set(0,HY-.115,.03); jaw.rotation.set(Math.PI/2,0,Math.PI); jaw.scale.set(1,1,.85);
- manne.add(jaw); headParts.push(jaw);
- // 눈구멍 (움푹한 어둠)
- const socket=new THREE.MeshStandardMaterial({color:0x0a0908,roughness:1});
- [-1,1].forEach(s=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.033,14,12),socket);
-  e.position.set(s*.05,HY-.02,.10); e.scale.set(1,1.05,.7); manne.add(e); headParts.push(e);});
- // 코 구멍
- const nose=new THREE.Mesh(new THREE.ConeGeometry(.018,.045,8),socket);
- nose.position.set(0,HY-.075,.115); nose.rotation.x=Math.PI; manne.add(nose); headParts.push(nose);
- // 치열 힌트
- const teeth=new THREE.Mesh(new THREE.BoxGeometry(.075,.016,.02),boneMat);
- teeth.position.set(0,HY-.11,.09); manne.add(teeth); headParts.push(teeth);
+ /* --- 두개골 (headParts: 완성 전 숨김) — 해부학적 형태 --- */
+ const HY=spineTop+.20;
+ const skullMat=new THREE.MeshStandardMaterial({color:0xe9e0c9,roughness:.5,emissive:0x2c261b,emissiveIntensity:.4});
+ const skullMat2=new THREE.MeshStandardMaterial({color:0xd6ccb0,roughness:.55,emissive:0x241f15,emissiveIntensity:.32});
+ const toothMat=new THREE.MeshStandardMaterial({color:0xeee7d2,roughness:.45,emissive:0x2a251a,emissiveIntensity:.3});
+ const socket=new THREE.MeshStandardMaterial({color:0x050403,roughness:1});
+ // 뇌머리(두개) — 뒤로 길쭉하고 위로 둥근 돔
+ const cranium=new THREE.Mesh(new THREE.SphereGeometry(.122,32,28),skullMat);
+ cranium.position.set(0,HY+.04,-.03); cranium.scale.set(.96,1.05,1.22); manne.add(cranium); headParts.push(cranium);
+ // 이마
+ const fore=new THREE.Mesh(new THREE.SphereGeometry(.105,28,22),skullMat);
+ fore.position.set(0,HY+.012,.05); fore.scale.set(.94,.9,.72); manne.add(fore); headParts.push(fore);
+ // 눈썹뼈(브로우 릿지) — 눈 위 가로 능선
+ const brow=new THREE.Mesh(new THREE.BoxGeometry(.2,.024,.045),skullMat);
+ brow.position.set(0,HY+.012,.092); brow.rotation.x=-.18; manne.add(brow); headParts.push(brow);
+ // 안면 중앙 받침
+ const mid=new THREE.Mesh(new THREE.SphereGeometry(.076,22,18),skullMat);
+ mid.position.set(0,HY-.06,.072); mid.scale.set(.88,1,.7); manne.add(mid); headParts.push(mid);
+ // 안와(눈구멍) — 아몬드형, 깊고 각지게, 바깥 아래로 기울임
+ [-1,1].forEach(s=>{
+  const e=new THREE.Mesh(new THREE.SphereGeometry(.041,18,14),socket);
+  e.position.set(s*.056,HY-.012,.10); e.scale.set(1.15,.92,.95); e.rotation.z=s*.22; manne.add(e); headParts.push(e);
+ });
+ // 광대뼈(관골) — 각진 돌출
+ [-1,1].forEach(s=>{
+  const z=new THREE.Mesh(new THREE.BoxGeometry(.028,.055,.07),skullMat2);
+  z.position.set(s*.092,HY-.05,.05); z.rotation.set(.12,s*.5,s*.18); manne.add(z); headParts.push(z);
+ });
+ // 코뼈 능선
+ const nb=new THREE.Mesh(new THREE.BoxGeometry(.016,.06,.02),skullMat);
+ nb.position.set(0,HY-.03,.118); manne.add(nb); headParts.push(nb);
+ // 비강(코 구멍) — 세로로 긴 역물방울(어둠)
+ const nose=new THREE.Mesh(new THREE.ConeGeometry(.023,.056,3),socket);
+ nose.position.set(0,HY-.078,.122); nose.rotation.x=Math.PI; nose.rotation.y=Math.PI/6; manne.add(nose); headParts.push(nose);
+ // 위턱(상악)
+ const maxilla=new THREE.Mesh(new THREE.BoxGeometry(.1,.035,.06),skullMat);
+ maxilla.position.set(0,HY-.108,.088); maxilla.scale.set(1,1,.9); manne.add(maxilla); headParts.push(maxilla);
+ // 아래턱(하악) — U자 + 턱끝
+ const jaw=new THREE.Mesh(new THREE.TorusGeometry(.07,.02,10,24,Math.PI*1.15),skullMat2);
+ jaw.position.set(0,HY-.14,.05); jaw.rotation.set(Math.PI/2,0,Math.PI); jaw.scale.set(1,1.15,.95); manne.add(jaw); headParts.push(jaw);
+ const chin=new THREE.Mesh(new THREE.BoxGeometry(.052,.032,.028),skullMat2);
+ chin.position.set(0,HY-.16,.09); manne.add(chin); headParts.push(chin);
+ // 하악 상행지 양옆
+ [-1,1].forEach(s=>{const ra=new THREE.Mesh(new THREE.BoxGeometry(.018,.07,.03),skullMat2);
+  ra.position.set(s*.088,HY-.10,.02); ra.rotation.z=s*.12; manne.add(ra); headParts.push(ra);});
+ // 이빨 — 윗줄/아랫줄 아치
+ for(let i=0;i<9;i++){ const a=(i/8-.5)*1.5, tx=Math.sin(a)*.048, tz=.10-Math.cos(a)*.012;
+  const tu=new THREE.Mesh(new THREE.BoxGeometry(.009,.018,.008),toothMat);
+  tu.position.set(tx,HY-.124,tz+.006); manne.add(tu); headParts.push(tu);
+  const td=new THREE.Mesh(new THREE.BoxGeometry(.009,.018,.008),toothMat);
+  td.position.set(tx,HY-.145,tz); manne.add(td); headParts.push(td);
+ }
+ // 완성된 두개골을 비추는 조명 (씌우기 전엔 꺼둠)
+ const skullL=new THREE.PointLight(0xfff2e2,0,2.4,2); skullL.position.set(0,HY,.26); manne.add(skullL);
+ window.__skullL=skullL;
 })();
 manne.position.set(-11.0,y3,17.4);
+manne.rotation.y=Math.PI;                          // 얼굴(정면 +z)이 방 입구/플레이어 쪽을 향하게
 headParts.forEach(m=>m.visible=false);           // 처음엔 머리 없음
 const manneState={active:false,cool:6};
+let lunge=0, lungeBase=null, lungeScale=1, lungeCam=null, manneHome=null;   // 백골 돌진 점프스케어
 
-/* 백골이 쥔 단서 카드 */
+/* 백골이 쥔 단서 카드 — manne의 자식(회전에 따라 손 위치 유지) */
 const clueCardMat=new THREE.MeshStandardMaterial({color:0xe3d9b8,roughness:.85,
  side:THREE.DoubleSide,emissive:0x342c1a,emissiveIntensity:.42});
 const clueCard=pl(.16,.22,clueCardMat);
-clueCard.position.set(-10.74,y3+1.0,17.48); clueCard.rotation.y=-.5; clueCard.rotation.z=.18;
-scene.add(clueCard);
+clueCard.position.set(.26,1.02,.12); clueCard.rotation.y=.5; clueCard.rotation.z=-.18;   // 정면(+z) 손 앞
+manne.add(clueCard);
 it(clueCard,'skullclue','단서 카드');
-const clueL=new THREE.PointLight(0xffe0a8,.4,1.6,2); clueL.position.set(-10.74,y3+1.1,17.55); scene.add(clueL);
+const clueL=new THREE.PointLight(0xffe0a8,.4,1.6,2); clueL.position.set(.26,1.12,.2); manne.add(clueL);
 rLights.push(clueL);
 
 /* 백골 모형 — 조사용 히트박스 (몸 전체, 항상 클릭 가능) */
@@ -2443,31 +2512,38 @@ function jump(){if(!G.started||G.uiOpen||G.over)return;if(Pl.ground){Pl.vy=5.4;P
 const jb=document.getElementById('jumpBtn');
 jb.addEventListener('touchstart',e=>{e.preventDefault();jump();},{passive:false});
 jb.addEventListener('click',jump);
-let drag=false,lx=0,ly=0;
+let drag=false,lx=0,ly=0,mdx=0,mdy=0,mdown=false;
 canvas.addEventListener('mousedown',e=>{
+ mdown=false;
  if(camMode&&!G.uiOpen){ takePhoto(); return; }
- drag=true;lx=e.clientX;ly=e.clientY;});
-addEventListener('mouseup',()=>drag=false);
+ drag=true;mdown=true;lx=mdx=e.clientX;ly=mdy=e.clientY;});
+addEventListener('mouseup',e=>{
+ if(mdown && Math.hypot(e.clientX-mdx,e.clientY-mdy)<8) tapInteract(e.clientX,e.clientY);
+ drag=false;mdown=false;});
 addEventListener('mousemove',e=>{if(!drag||G.uiOpen)return;
  Pl.yaw-=(e.clientX-lx)*.004;Pl.pitch-=(e.clientY-ly)*.004;
  Pl.pitch=Math.max(-1.2,Math.min(1.2,Pl.pitch));lx=e.clientX;ly=e.clientY;});
 const sb=document.getElementById('stickBase'),sk=document.getElementById('stickKnob');
 let mT=null,lT=null,sv={x:0,y:0};
 addEventListener('touchstart',e=>{for(const t of e.changedTouches){
+ if(onUI(t.target)) continue;
  if(mT===null&&t.clientX<innerWidth*.45&&t.clientY>innerHeight*.5){
-  mT={id:t.identifier,ox:t.clientX,oy:t.clientY};sb.style.display='block';
+  mT={id:t.identifier,ox:t.clientX,oy:t.clientY,x0:t.clientX,y0:t.clientY,moved:false};sb.style.display='block';
   sb.style.left=(t.clientX-55)+'px';sb.style.top=(t.clientY-55)+'px';sb.style.bottom='auto';}
- else if(lT===null&&t.clientX>innerWidth*.3){lT={id:t.identifier,x:t.clientX,y:t.clientY};}}},{passive:true});
+ else if(lT===null){lT={id:t.identifier,x:t.clientX,y:t.clientY,x0:t.clientX,y0:t.clientY,moved:false};}}},{passive:true});
 addEventListener('touchmove',e=>{if(G.uiOpen)return;
  for(const t of e.changedTouches){
   if(mT&&t.identifier===mT.id){let dx=t.clientX-mT.ox,dy=t.clientY-mT.oy;
+   if(!mT.moved&&Math.hypot(t.clientX-mT.x0,t.clientY-mT.y0)>10)mT.moved=true;
    const m=Math.hypot(dx,dy),mx=44;if(m>mx){dx*=mx/m;dy*=mx/m;}
    sv={x:dx/mx,y:dy/mx};sk.style.left=(31+dx)+'px';sk.style.top=(31+dy)+'px';}
-  else if(lT&&t.identifier===lT.id){Pl.yaw-=(t.clientX-lT.x)*.005;Pl.pitch-=(t.clientY-lT.y)*.005;
+  else if(lT&&t.identifier===lT.id){
+   if(!lT.moved&&Math.hypot(t.clientX-lT.x0,t.clientY-lT.y0)>10)lT.moved=true;
+   Pl.yaw-=(t.clientX-lT.x)*.005;Pl.pitch-=(t.clientY-lT.y)*.005;
    Pl.pitch=Math.max(-1.2,Math.min(1.2,Pl.pitch));lT.x=t.clientX;lT.y=t.clientY;}}},{passive:true});
 addEventListener('touchend',e=>{for(const t of e.changedTouches){
- if(mT&&t.identifier===mT.id){mT=null;sv={x:0,y:0};sb.style.display='none';sk.style.left='31px';sk.style.top='31px';}
- if(lT&&t.identifier===lT.id)lT=null;}});
+ if(mT&&t.identifier===mT.id){ if(!mT.moved) tapInteract(mT.x0,mT.y0); mT=null;sv={x:0,y:0};sb.style.display='none';sk.style.left='31px';sk.style.top='31px';}
+ if(lT&&t.identifier===lT.id){ if(!lT.moved) tapInteract(lT.x0,lT.y0); lT=null;}}});
 function groundAt(x,z,cy){let best=-999;
  for(const s of surf){if(x>=s.x1&&x<=s.x2&&z>=s.z1&&z<=s.z2){if(s.y<=cy+.75&&s.y>best)best=s.y;}}
  return best===-999?null:best;}
@@ -2482,7 +2558,7 @@ function photoCount(){return Object.keys(G.photos).filter(k=>k!=='hall'&&G.photo
 function updateMission(){const el=document.getElementById('photoMission');if(!el)return;
  const n=photoCount();
  if(n>=4){ el.className='done'; el.innerHTML='📷 사진 4/4 완료 — 중앙현관에서 마지막 한 장'; }
- else { el.className=''; el.innerHTML='📷 현실이 아닌 것을 사진으로 찍어라 <span class="cnt">'+n+'/4</span>'; }}
+ else { el.className=''; el.innerHTML='📷 뒤틀린 것을 사진으로 찍어라 <span class="cnt">'+n+'/4</span>'; }}
 function renderFrags(){fragsEl.innerHTML=SPOTS.map(s=>
  `<div class="frag ${G.photos[s.id]?'on':''}">${G.photos[s.id]?'✓ ':''}${s.name}</div>`).join('');
  updateMission();}
@@ -2512,7 +2588,7 @@ window.useItem=id=>{
    amb.intensity=.32;invBtn.classList.remove('alert');renderInv();
    setTimeout(()=>{closeInv();setObj('책상 위의 출석부를 확인하라');sWhis();},350);}
   else{G.flashlight=false;itm.state='미장착';amb.intensity=.05;sClick();renderInv();}}
- else if(id==='cam'){sClick();toast('현실이 아닌 것 앞에서 사용할 수 있다. (Q + 클릭)');}
+ else if(id==='cam'){sClick();toast('뒤틀린 것 앞에서 사용할 수 있다. (Q + 클릭)');}
  else if(id==='book'){sClick();toast('여학생에게 가져다주자.');}
  else if(id==='reagent'){
   sClick(); closeInv();
@@ -2544,39 +2620,54 @@ function pickCamera(){
 프레임 안에 담기지 않으면, 아무것도 남지 않는다.</div>
   <button class="btn accent" onclick="closeModal()">챙긴다</button>`;
  modal.style.display='flex';
- setObj('첫 번째 목적지 — 2층 도서실로 가자 (현실이 아닌 것을 사진에 담아라)');
+ setObj('첫 번째 목적지 — 2층 도서실로 가자 (뒤틀린 것을 사진에 담아라)');
 }
 function giveItem(o){ if(items.find(x=>x.id===o.id))return; items.push(o);
  invBtn.classList.add('alert'); setTimeout(()=>invBtn.classList.remove('alert'),5000); }
 
 /* ---------- 카메라 / 촬영 ---------- */
 const photoTargets=[];
-let camMode=false;
-const vf=document.getElementById('vfinder'), shootBtn=document.getElementById('shootBtn'), camBtn=document.getElementById('camBtn');
+let camMode=false, selfMode=false;
+const vf=document.getElementById('vfinder'), shootBtn=document.getElementById('shootBtn'), camBtn=document.getElementById('camBtn'), selfBtn=document.getElementById('selfBtn');
+function updateVF(){
+ const rec = vf.querySelector('.rec');
+ if(rec) rec.textContent = selfMode ? '🤳 셀카 — 흐릿한 내 얼굴' : '● 촬영 대기';
+ vf.classList.toggle('self', selfMode);
+ vf.classList.toggle('selfmode', selfMode);
+ shootBtn.textContent = selfMode ? '🤳' : '📷';
+ selfBtn.classList.toggle('on', selfMode);
+}
 function setCamMode(b){
  if(b && (!G.camera||G.uiOpen||G.over)) return;
  camMode=!!b;
+ if(!camMode) selfMode=false;                 // 카메라를 끄면 셀카모드 해제
  vf.style.display=camMode?'block':'none';
  shootBtn.style.display=camMode?'block':'none';
  camBtn.classList.toggle('on',camMode);
- const self = camMode && G.hall.mirrorSeen && !G.hall.selfShot;
- const rec = vf.querySelector('.rec');
- if(rec) rec.textContent = self ? '🤳 셀프 촬영 · 스스로를 담아라' : '● 촬영 대기';
- vf.classList.toggle('self', self);
- shootBtn.textContent = self ? '🤳' : '📷';
+ // 셀카모드 버튼: 거울을 본 뒤 & 아직 셀카를 안 찍었을 때만 노출
+ const canSelf = camMode && G.hall.mirrorSeen && !G.hall.selfShot;
+ selfBtn.style.display = canSelf ? 'block' : 'none';
+ updateVF();
  if(camMode) nb_(0,.06,900,.04,3);
 }
+function toggleSelf(){
+ if(!camMode || !G.hall.mirrorSeen || G.hall.selfShot) return;
+ selfMode=!selfMode; updateVF();
+ if(selfMode){ sWhis(); }
+}
 camBtn.addEventListener('click',()=>setCamMode(!camMode));
+selfBtn.addEventListener('click',e=>{e.stopPropagation();toggleSelf();});
+selfBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();toggleSelf();},{passive:false});
 shootBtn.addEventListener('click',e=>{e.stopPropagation();takePhoto();});
 shootBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();takePhoto();},{passive:false});
 function takePhoto(){
  if(!camMode||G.uiOpen||G.over) return;
  shutterFx();
- // 거울을 본 뒤 → 셀프 촬영(마지막 한 장 = 나 자신)
- if(G.hall.mirrorSeen && !G.hall.selfShot){
+ // 셀카모드에서 흐릿한 내 얼굴을 찍음 = 마지막 한 장(나 자신)
+ if(selfMode && G.hall.mirrorSeen && !G.hall.selfShot){
   G.hall.selfShot=1; G.photos.hall=1; renderFrags();
   redFlash(.35); setTimeout(sOk,180);
-  toast('마지막 한 장 — 거울에도 없던 나를, 필름에 담았다.');
+  toast('마지막 한 장 — 거울에도 없던, 뒤틀린 나를 담았다.');
   setObj('중앙현관 문으로 — 이제 나갈 수 있다');
   setCamMode(false);
   return;
@@ -2587,22 +2678,23 @@ function takePhoto(){
   if(!t.obj.visible||G.photos[t.id]) continue;
   const wp=new THREE.Vector3(); t.obj.getWorldPosition(wp);
   const dist=wp.distanceTo(camera.position);
-  if(dist>7||dist<0.35) continue;
+  if(dist>7.5||dist<0.15) continue;
   const sp=wp.clone().project(camera);
-  if(sp.z>1||Math.abs(sp.x)>.40||Math.abs(sp.y)>.34) continue;   // 프레임 안에 들어와야 함
+  if(sp.z>1||Math.abs(sp.x)>.48||Math.abs(sp.y)>.44) continue;   // 프레임 안에 들어와야 함 (관대하게)
   const dir=wp.clone().sub(camera.position).normalize();
   pray.set(camera.position,dir);
   const hits=pray.intersectObjects(scene.children,true);
   let blockedBy=false;
   for(const h of hits){
    if(h.object===t.obj) break;
-   if(h.object.visible && h.distance < dist-0.12 && h.object.material && h.object.material.visible!==false){ blockedBy=true; break; }
+   if(h.object.visible && h.distance < dist-0.25 && h.object.material && h.object.material.visible!==false){ blockedBy=true; break; }
   }
   if(blockedBy) continue;
   got=t; break;
  }
  if(got){
-  G.photos[got.id]=1; renderFrags(); setTimeout(sOk,180);
+  G.photos[got.id]=1; if(got.hideOnShot && got.obj) got.obj.visible=false;   // 지정된 대상만 즉시 숨김
+  renderFrags(); setTimeout(sOk,180);
   toast('필름에 담겼다 — '+got.name);
   if(got.onShot) got.onShot();
  } else {
@@ -2651,6 +2743,28 @@ function tryIt(){if(!G.target||G.uiOpen||G.over||!G.started||mirrorSeq)return;
  if(READS[id]){openModalRead(id);return;}
  openModal(id);}
 
+/* ===== 화면의 물체를 직접 탭 → 상호작용 (중앙 조준 없이) ===== */
+function pickAt(cx,cy){
+ const nx=(cx/innerWidth)*2-1, ny=-(cy/innerHeight)*2+1;
+ ray.setFromCamera({x:nx,y:ny},camera);
+ const h=ray.intersectObjects(inter);
+ let tgt=(h.length&&h[0].distance<3.8)?h[0].object:null;
+ if(tgt && tgt.visible===false) tgt=null;
+ if(tgt){const id=tgt.userData.id;
+  if(id==='door_class'&&!G.doorLocked)tgt=null;
+  if(id==='girl'&&!G.lib.girl)tgt=null;
+  if(id==='padlock'&&!G.lib.given)tgt=null;
+  if(id==='book'&&!bookM.visible)tgt=null;}
+ return tgt;
+}
+function onUI(el){ return !!(el && el.closest && el.closest('button,#prompt,#dbgBox,#modal,#invOv,#broadcast,input')); }
+function tapInteract(cx,cy){
+ if(G.uiOpen||G.over||!G.started||mirrorSeq||camMode) return false;
+ const t=pickAt(cx,cy);
+ if(t){ G.target=t; tryIt(); return true; }
+ return false;
+}
+
 /* ---------- 7세그 ---------- */
 function seg7(ch){
  const S={'0':'abcdef','7':'abc','3':'abcdg','4':'fgbc'};
@@ -2681,8 +2795,7 @@ window.closeModal=id=>{closeModalRaw();
  if(id==='soundposter'&&!G.bro.solved){ G.bro.posterRead=1;
   setObj('오실로스코프 콘솔에서 방송 속 목소리와 같은 파형을 재현하자'); }
  if(id==='hallmirror'&&!G.hall.selfShot){ G.hall.mirrorSeen=1;
-  setObj('셀프 촬영으로 스스로를 사진에 담아라 (📷 셔터)');
-  setTimeout(()=>{ setCamMode(true); },200); }
+  setObj("거울에 내가 비치지 않는다… '뒤틀린 것'은 — ?"); }
  };
 /* 인벤토리에 넣어 다시 볼 수 있는 문서 — 단서카드/기록류만 (포스터·벽 자료는 제외) */
 const DOCMETA={
@@ -2714,7 +2827,7 @@ function openModal(id){
     <p>명단이 있어야 할 자리가, 전부 먹으로 검게 칠해져 있다.
 앞장에 끼워 넣은 쪽지 한 장.</p>
     <div class="lst"><b>『원에서 나가는 법』</b><br>
-     원 안에는 <b>현실에 없는 것</b>이 섞여 있다.<br>
+     원 안에는 <b>뒤틀려 버린 것</b>이 섞여 있다.<br>
      그것들을 전부 사진에 담아야 문이 열린다.<br><br>
      ① 도서실 &nbsp; ② 체육관 &nbsp; ③ 과학실<br>
      ④ 방송실<br>
@@ -2767,9 +2880,9 @@ function openModal(id){
     <li>도서관에서 빌린 책은 정해진 반납 기간 내에 제출한다.</li>
     <li>도서관에서 책을 읽고 나면 반납함에 책을 가져다 둔다.</li>
     <li>도서관 내에서는 음식물 취식을 할 수 없다.</li>
-    <li>도서관 내에서 『<b>${BOOKTITLE}</b>』 라는 책을 발견하면,<br>그것은 현실세계의 책이 아닌 것이다.</li>
+    <li>도서관 내에서 『<b>${BOOKTITLE}</b>』 라는 책을 발견하면,<br>그것은 현실에서 뒤틀려 버린 책이다.</li>
    </ol>
-   <div class="ps">p.s) 컴퓨터 암호는 <b>H₂O</b> 야!</div></div>
+   <div class="ps">p.s) 컴퓨터 암호는 <b>A TO H</b>!<br><span style="opacity:.8">(키보드를 보고 A에서 오른쪽으로 H까지)</span></div></div>
    <button class="btn accent" onclick="closeModal()">돌아선다</button>`;
   modal.style.display='flex';return;}
  /* --- 컴퓨터 --- */
@@ -2805,7 +2918,7 @@ function openModal(id){
    mb.innerHTML=`<h2>교복을 입은 여학생</h2>
     <div class="clue">책을 건네려는 순간, 손이 멈춘다.
 
-이건 — 현실에 없는 책이다.
+이건 — 뒤틀려 버린 책이다.
 넘기기 전에, 먼저 남겨야 한다.</div>
     <button class="btn" onclick="closeModal()">물러선다</button>`;
   } else {
@@ -2839,7 +2952,7 @@ function openModal(id){
 /* 컴퓨터 */
 window.pcTry=()=>{
  const v=(document.getElementById('pcpw').value||'').toUpperCase().replace(/\s/g,'');
- if(v==='HIJKLMNO'){ G.lib.pc=1; sOk(); showDesktop(); }
+ if(v==='ASDFGH'){ G.lib.pc=1; sOk(); showDesktop(); }
  else { sFail(); mb.classList.add('shake'); setTimeout(()=>mb.classList.remove('shake'),400);
   const e=document.getElementById('pcpw'); if(e){e.value='';e.focus();} }
 };
@@ -2885,32 +2998,31 @@ function openLocker(idx){
 /* 촬영 대상 등록 */
 photoTargets.push({obj:bookM,id:'lib',name:'『'+BOOKTITLE+'』',
  onShot:()=>{ G.lib.shot=1; setObj('책을 집어 여학생에게 가져다주자'); }});
-photoTargets.push({obj:window.__uniHit,id:'gym',name:'이름 없는 유니폼',
+photoTargets.push({obj:window.__uniHit,id:'gym',name:'이름 없는 유니폼',hideOnShot:true,
  onShot:()=>{ gymClear(); }});
 photoTargets.push({obj:window.__skelPhotoHit,id:'sci',name:'머리를 되찾은 백골',
  onShot:()=>{
   G.sci.clear=1;
-  const D=ROOMDOOR['2_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }
+  const D=ROOMDOOR['2_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; }
   setTimeout(()=>{ toast('과학실 — 클리어'); },400);
   setObj('과학실 완료 — 3층 방송실로 가자');
  }});
 photoTargets.push({obj:window.__broTVHit,id:'bro',name:'출처 없는 목소리',
  onShot:()=>{
   // 나를 안내하던 '방송'을 찍어 버렸다 → 검은 원 폭주
-  const D=ROOMDOOR['2_1']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }
+  const D=ROOMDOOR['2_1']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; }
   broBerserk=true; broBerserkT=0;                 // 루프에서 사이렌 반복
   sSiren(); jolt(); redFlash(.7); glitchFx();
   toast('방송이 사진에 찍혔다 — 검은 원이 폭주하기 시작한다! 사이렌이 울린다');
-  setObj('중앙현관으로! — 마지막으로 현실이 아닌 것을 사진에 담아라');
+  setObj('중앙현관으로! — 마지막 한 장이 남았다');
   G.pending='p'+Object.keys(G.photos).filter(k=>k!=='hall'&&G.photos[k]).length;
  }});
 function gymClear(){
  G.gym.clear=1; G.gym.ballSilent=1; G.gym.card=1;
+ // 유니폼 즉시 사라짐 — 재촬영·혼동 방지
+ uniformM.visible=false; window.__uniHit.visible=false; window.__uniL.intensity=0;
  closeModalRaw();
- setTimeout(()=>{
-  uniformM.visible=false; window.__uniHit.visible=false; window.__uniL.intensity=0;
-  sSting(); redFlash(.4); glitchFx();
- },500);
+ setTimeout(()=>{ sSting(); redFlash(.4); glitchFx(); },300);
  // 코트 한가운데로 공이 툭 떨어진다 (연출만 — 조사 불필요)
  setTimeout(()=>{
   ghostBall.visible=true;
@@ -2919,7 +3031,7 @@ function gymClear(){
  },1200);
  // 체육관 문 즉시 개방
  setTimeout(()=>{
-  const D=ROOMDOOR['0_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} openDoor(D); }
+  const D=ROOMDOOR['0_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; openDoor(D); }
   if(gymDoors && !gymDoors.open){ gymDoors.l.hg.userData.to=-1.35; gymDoors.r.hg.userData.to=1.35;
    if(gymDoors.col)gymDoors.col.dead=true; gymDoors.open=true; }
   sCreakDoor();
@@ -2988,7 +3100,7 @@ window.xD=i=>{gxLock[i]=(gxLock[i]+9)%10;sClick();document.getElementById('xd'+i
 window.gymExitTry=()=>{
  if(gxLock.join('')==='1004'){
   sOk(); closeModalRaw();
-  const D=ROOMDOOR['0_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} openDoor(D); }
+  const D=ROOMDOOR['0_0']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; openDoor(D); }
   window.__ballL.intensity=0;
   toast('체육관 — 클리어');
   const n=Object.keys(G.photos).filter(k=>k!=='hall'&&G.photos[k]).length;
@@ -3061,7 +3173,7 @@ window.padTry=()=>{
  const ok=[1,4,6,7];
  if(padSel.length===4 && ok.every(n=>padSel.includes(n))){
   sOk(); G.lib.doorOpen=1; closeModalRaw();
-  openDoor(libDoor); padM.visible=false;
+  openDoor(libDoor); libDoor.noAutoClose=true; padM.visible=false;
   toast('도서실 — 클리어');
   setObj('도서실 완료 — 1층 체육관으로 가자');
  } else { sFail(); toast('고리가 꿈쩍도 하지 않는다.'); padSel=[]; renderPad();
@@ -3289,6 +3401,7 @@ window.deliverSkull=()=>{
  if(k==='fe'){
   G.sci.head=1; G.sci.crafted=''; closeModalRaw();
   headParts.forEach(m=>m.visible=true);
+  if(window.__skullL) window.__skullL.intensity=1.5;
   window.__skelPhotoHit.visible=true;
   sOk(); sCreakDoor(); setTimeout(()=>{ sWhis(); },500);
   toast('불꽃색이 뼈와 같은 재료 — 백골이 머리를 받아들였다.');
@@ -3300,11 +3413,19 @@ window.deliverSkull=()=>{
  }
 };
 function skullAttack(nm){
- // 갑툭튀 점프스케어 — 백골이 순간적으로 달려드는 연출. 플레이어를 이동시키지 않는다.
- sSting(); sScream(); sSkullRoar(); jolt(); redFlash(.85); glitchFx();
- manne.rotation.x=.55;                       // 확 앞으로 기울며 달려드는 듯
- setTimeout(()=>{ manne.rotation.x=.18; },130);
- setTimeout(()=>{ manne.rotation.x=0; },380);   // 원위치
+ // 가만히 서 있던 '머리 없는 백골'이 갑자기 나에게 확 달려들어 화면을 가득 채운다
+ sScream(); sSkullRoar(); jolt(); redFlash(.92); glitchFx();
+ if(!manneHome) manneHome={x:manne.position.x,y:manne.position.y,z:manne.position.z,
+   s:manne.scale.x, ry:manne.rotation.y, rx:manne.rotation.x};
+ // 카메라 정면 아주 가까이, 눈높이에 백골이 오도록 목표 지점 계산
+ const SCALE=1.8, HEADY=1.82;                             // 두개골 로컬 높이(spineTop+.20)
+ let fx=Math.sin(Pl.yaw), fz=-Math.cos(Pl.yaw);           // 시선 수평 방향
+ lungeScale=SCALE;
+ lungeBase={ x: camera.position.x + fx*0.5,
+             z: camera.position.z + fz*0.5,
+             y: camera.position.y - HEADY*SCALE + 0.14 };   // 두개골이 눈높이 근처
+ lungeCam={ x: camera.position.x, z: camera.position.z };
+ lunge=0.0001;                                            // 루프에서 애니메이션 시작
  toast(nm+' 두개골은 가짜였다 — 백골이 갑자기 달려들었다!');
  setObj('과학 준비실 시약장에서 재료를 다시 골라라 — 뼈(칼슘)와 불꽃색이 같은 것');
 }
@@ -3441,14 +3562,9 @@ function openHallMirror(){
 그런데 — <b>내가 거울에 보이지 않아…</b>
 텅 빈 현관만 비칠 뿐, 내 모습이 없다.
 
-<b>내가 뒤틀리면서,
-현실 세계의 것이 아니게 된 건가…?</b>
-
-이 원 안에서 끝까지 <b>기록되지 않은 것</b>은 —
-바로 <b>나였다.</b></div>
-  <div class="clue"><b>카메라</b>를 켜면 <b>셀프(셀카) 촬영</b>으로 바뀐다.
-스스로를 사진에 담아야, 원이 나를 뱉어낸다.</div>
-  <button class="btn accent" onclick="closeModal('hallmirror')">카메라를 꺼낸다</button>`;
+거울에도 비치지 않을 만큼 —
+<b>나도, 뒤틀려 버렸던 걸까…?</b></div>
+  <button class="btn accent" onclick="closeModal('hallmirror')">물러선다</button>`;
  modal.style.display='flex';
 }
 
@@ -3607,12 +3723,21 @@ function doorInteract(key){
   if(libDoor.closed) openDoor(libDoor); else closeDoor(libDoor,false);
   return; }
  const D=doorsList.find(d=>d.key===key); if(!D)return;
+ // ── 순서 강제: 앞 방을 끝내기 전엔 입장 불가, 차례가 되면 첫 입장 허용 ──
+ const ORD={ r00:{need:()=>G.photos.lib, been:()=>G.gym.been, prev:'도서실'},
+             r20:{need:()=>G.photos.gym, been:()=>G.sci.been, prev:'체육관'},
+             r21:{need:()=>G.photos.sci, been:()=>G.bro.been, prev:'과학실'} }[key];
+ if(ORD && !ORD.been()){
+  if(!ORD.need()){ toast('아직 들어갈 수 없다 — 먼저 '+ORD.prev+'을 끝내야 한다.'); sFail(); return; }
+  if(D.locked){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }   // 차례가 됨 → 첫 입장 허용
+ }
  if(key==='r00' && D.locked){
   if(!G.gym.clear){ toast('아직 남은 것이 있다 — 이름 없는 유니폼을 사진에 담아라'); sFail(); return; }
   D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }
  if(key==='r20' && D.locked){
-  if(!G.sci.head){ toast('백골이 통로를 가로막고 있다 — 머리를 찾아 돌려주기 전엔 열리지 않는다.'); sFail(); return; }
-  toast('완성된 백골을 사진에 담아야 문이 열린다.'); sFail(); return; }
+  if(G.photos.sci){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }
+  else if(!G.sci.head){ toast('백골이 통로를 가로막고 있다 — 머리를 찾아 돌려주기 전엔 열리지 않는다.'); sFail(); return; }
+  else { toast('완성된 백골을 사진에 담아야 문이 열린다.'); sFail(); return; } }
  if(key==='r21' && D.locked){
   if(!G.bro.solved){ toast('출처 없는 목소리를 재현해, 그것을 사진에 담아야 문이 열린다.'); sFail(); return; }
   if(!G.photos.bro){ toast('떠오른 것을 아직 사진에 담지 않았다.'); sFail(); return; }
@@ -3727,9 +3852,9 @@ function debugKit(){
 function dbgClearRoom(key){
  if(key==='lib'){ G.photos.lib=1; G.lib.shot=1; G.lib.hasBook=1; G.lib.given=1; G.lib.doorOpen=1; G.lib.girl=0;
    if(libDoor){ libDoor.locked=false; if(libDoor.col){libDoor.col.dead=true;libDoor.col=null;} } }
- else if(key==='gym'){ G.photos.gym=1; G.gym.clear=1; G.gym.card=1; G.gym.ballSilent=1; }
- else if(key==='sci'){ G.photos.sci=1; G.sci.clear=1; G.sci.head=1; }
- else if(key==='bro'){ G.photos.bro=1; G.bro.solved=1; }
+ else if(key==='gym'){ G.photos.gym=1; G.gym.clear=1; G.gym.card=1; G.gym.ballSilent=1; G.gym.been=1; }
+ else if(key==='sci'){ G.photos.sci=1; G.sci.clear=1; G.sci.head=1; G.sci.been=1; }
+ else if(key==='bro'){ G.photos.bro=1; G.bro.solved=1; G.bro.been=1; }
 }
 function _dbgWarp(w,name,tail){
  debugKit();
@@ -3751,7 +3876,7 @@ function doWarpIdx(idx){
  return true;
 }
 /* 텍스트 입력(하위호환): 1~5 / 방 이름 / 준비·화장 */
-dbgEl.addEventListener('keydown',e=>{
+if(dbgEl) dbgEl.addEventListener('keydown',e=>{
  e.stopPropagation();
  if(e.key!=='Enter') return;
  const v=(dbgEl.value||'').trim(); dbgEl.value=''; dbgEl.blur();
@@ -3771,6 +3896,7 @@ function roomOf(){
 }
 function autoDoors(){
  const r=roomOf();
+ if(r==='0_0')G.gym.been=1; else if(r==='2_0')G.sci.been=1; else if(r==='2_1')G.bro.been=1;
  if(r&&r!=='0_1'&&ROOMDOOR[r]){          // 화장실(0_1)은 잠그지 않음 (재미용)
   const D=ROOMDOOR[r];
   if(!D.closed && !D.noAutoClose && D.animTo===undefined){
@@ -3787,6 +3913,13 @@ function autoDoors(){
 /* ---------- 루프 ---------- */
 const clkEl=document.getElementById('clock'),tmEl=document.getElementById('timer'),flEl=document.getElementById('floorTag');
 const RM={0:['체육관','화장실'],1:['2학년 3반','도서실'],2:['과학실','방송실']};
+/* ===== 순서 강제: 다음 차례가 아닌 방의 입구는 잠가 둔다 =====
+   도서실 → 체육관(0_0) → 과학실(2_0) → 방송실(2_1) 순.
+   각 방은 '앞 방을 사진에 담기 전'엔 문이 안 열린다. */
+['0_0','2_0','2_1'].forEach(k=>{ const D=ROOMDOOR[k];
+  if(D){ D.hg.rotation.y=0; D.closed=true; D.animTo=undefined; D.locked=true;
+    if(!D.col) D.col=addCol(D.x-.22,D.z-D.w/2-.05,D.x+.22,D.z+D.w/2+.05,D.y,2.4); } });
+
 /* ===== 성능 최적화: 근접 점광원만 켜기 (모바일 GPU 부하↓) =====
    씬의 점광원이 40개가 넘어 프래그먼트당 조명 계산이 과도 → 디벗에서 렉.
    플레이어와 가까운 MAXPL개만 visible로 유지(개수 고정 → 셰이더 재컴파일 없음). */
@@ -3811,6 +3944,27 @@ function loop(now){
  voidTex.offset.x+=dt*.008;voidTex.offset.y+=dt*.003;
  recL.material.emissiveIntensity=(Math.sin(t*4.5)>0)?1:.05;
  pulsers.forEach((m,i)=>m.material.emissiveIntensity=.3+.25*Math.sin(t*3+i*1.7));
+ // 백골 돌진 점프스케어 (가만있던 백골 → 카메라로 확 확대 → 원위치)
+ if(lunge>0 && manneHome){
+  lunge+=dt;
+  if(lunge<0.12){                       // ① 순식간에 돌진 + 확대
+   const k=Math.min(1,lunge/0.12), e=k*k*(3-2*k);
+   manne.position.set(manneHome.x+(lungeBase.x-manneHome.x)*e,
+                      manneHome.y+(lungeBase.y-manneHome.y)*e,
+                      manneHome.z+(lungeBase.z-manneHome.z)*e);
+   const sc=manneHome.s+(lungeScale-manneHome.s)*e; manne.scale.set(sc,sc,sc);
+   manne.rotation.y=Math.atan2(lungeCam.x-manne.position.x, lungeCam.z-manne.position.z);
+   manne.rotation.x=-.12;
+  } else if(lunge<0.46){                 // ② 코앞에서 덜덜 떨며 노려봄
+   manne.position.set(lungeBase.x+(Math.random()-.5)*.03, lungeBase.y+(Math.random()-.5)*.03, lungeBase.z+(Math.random()-.5)*.03);
+   manne.rotation.y=Math.atan2(lungeCam.x-manne.position.x, lungeCam.z-manne.position.z);
+  } else {                               // ③ 원위치 복귀
+   manne.position.set(manneHome.x,manneHome.y,manneHome.z);
+   manne.scale.set(manneHome.s,manneHome.s,manneHome.s);
+   manne.rotation.set(manneHome.rx,manneHome.ry,0);
+   lunge=0;
+  }
+ }
  const bo=blackoutT>0,lit=G.flashlight;
  cLights.forEach(o=>{let v=.5+.08*Math.sin(t*9+o.ph);
   if(o.bad&&Math.sin(t*13+o.ph)>.86)v=.05;if(Math.random()<.004)v*=.2;
@@ -3887,8 +4041,8 @@ function loop(now){
   if(G.seconds<=0){G.seconds=0;lose();}
   if(G.seconds<=600&&!G.fired.time10)fireBC('time10');
   tmEl.textContent=fmt(G.seconds);tmEl.className=G.seconds<=300?'danger':'';
-  const el=1800-G.seconds,tot=14*60+el;
-  clkEl.textContent='현재 00:'+String(Math.floor(tot/60)).padStart(2,'0')+' · 봉쇄 00:44';
+  const el=3600-G.seconds,tot=14*60+el, tm=Math.floor(tot/60);
+  clkEl.textContent='현재 '+String(Math.floor(tm/60)).padStart(2,'0')+':'+String(tm%60).padStart(2,'0')+' · 봉쇄 01:14';
   if(G.seconds<=300&&AU.ctx){hb+=dt;if(hb>.78){hb=0;tn(58,0,.12,'sine',.12);tn(52,.16,.1,'sine',.08);}}
   br+=dt;if(br>4.5){br=0;nb_(0,.5,420,.018,2);}
   // 체육관: 끊이지 않는 공 튀는 소리 (문 너머 → 코트 안)
