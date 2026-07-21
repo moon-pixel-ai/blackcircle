@@ -224,6 +224,8 @@
               transition:opacity .1s; mix-blend-mode:screen; }
   #blackout { position:fixed; inset:0; pointer-events:none; z-index:23; background:#000; opacity:0;
               transition:opacity .2s; }
+  #whiteout { position:fixed; inset:0; pointer-events:none; z-index:40; background:#fff; opacity:0;
+              transition:opacity 1.5s ease-in; }
   body.glitch #c { animation:gsh .07s linear 10; }
   body.jolt #c { animation:jolt .5s ease-out; }
   @keyframes gsh { 25%{transform:translate(-6px,3px)} 50%{transform:translate(6px,-3px)} 75%{transform:translate(-4px,-3px)} }
@@ -232,7 +234,7 @@
 </head>
 <body class="noselect">
 <canvas id="c"></canvas>
-<div id="vignette"></div><div id="scan"></div><div id="redflash"></div><div id="blackout"></div><div id="shutter"></div>
+<div id="vignette"></div><div id="scan"></div><div id="redflash"></div><div id="blackout"></div><div id="whiteout"></div><div id="shutter"></div>
 <div id="vfinder"><div class="frame">
   <div class="c" style="left:-2px;top:-2px;border-right:0;border-bottom:0"></div>
   <div class="c" style="right:-2px;top:-2px;border-left:0;border-bottom:0"></div>
@@ -573,7 +575,8 @@ const sSiren=()=>{                     // 공습 사이렌 (검은 원 폭주)
  for(let i=0;i<7;i++){ const t0=i*0.9;
   sw(480,980,t0,0.46,'sawtooth',.11); sw(980,480,t0+0.46,0.44,'sawtooth',.11); }
  tn(58,0,6.4,'sine',.05);};
-let broBerserk=false, broBerserkT=0;    // 방송 촬영 후 폭주 루프
+let broBerserk=false, broBerserkT=0, broSirenN=0;    // 방송 촬영 후 폭주 루프 (사이렌 5회)
+const BRO_SIREN_MAX=5;
 const sJump=()=>{nb_(0,.07,340,.07,1.2);nb_(0,.03,1400,.03,3);};
 const sLand=()=>{nb_(0,.12,150,.16,.8);tn(70,0,.1,'sine',.10);};
 const sDrag=()=>nb_(0,1.5,220,.05,1.5);
@@ -814,11 +817,14 @@ const fleshMat=new THREE.MeshStandardMaterial({color:0xd9c8bc,roughness:.85});
 const fleshDark=new THREE.MeshStandardMaterial({color:0xb9a394,roughness:.9});
 const mCan=document.createElement('canvas');mCan.width=512;mCan.height=256;
 const mX=mCan.getContext('2d');
-(function(){const g=mX.createLinearGradient(0,0,512,256);
+function mirrorBase(){
+ const g=mX.createLinearGradient(0,0,512,256);
  g.addColorStop(0,'#3d474f');g.addColorStop(.5,'#525e66');g.addColorStop(1,'#333b41');
  mX.fillStyle=g;mX.fillRect(0,0,512,256);
  for(let i=0;i<40;i++){mX.fillStyle=`rgba(210,228,236,${Math.random()*.045})`;
-  mX.beginPath();mX.arc(Math.random()*512,Math.random()*256,12+Math.random()*46,0,7);mX.fill();}})();
+  mX.beginPath();mX.arc(Math.random()*512,Math.random()*256,12+Math.random()*46,0,7);mX.fill();}
+}
+mirrorBase();
 const mTex=new THREE.CanvasTexture(mCan);
 const faceTex=cv(256,256,(x,w,h)=>{x.clearRect(0,0,w,h);
  const g=x.createRadialGradient(128,120,10,128,120,110);
@@ -1759,6 +1765,39 @@ const girl=new THREE.Group(); girl.visible=false; scene.add(girl);
 })();
 it(new THREE.Mesh(new THREE.CylinderGeometry(.30,.30,1.35,10),new THREE.MeshBasicMaterial({visible:false})),'girl','교복 여학생');
 const girlHit=inter[inter.length-1]; girlHit.visible=false; scene.add(girlHit);
+
+/* ===== 화장실 점프스케어 — 피눈물 흘리는 여학생 (뒤를 본 순간 덮쳐온다) =====
+   어둠 속에서도 또렷하게 보여야 하므로 조명 영향을 받지 않는 Basic 재질 사용 */
+const wcGhost=new THREE.Group(); wcGhost.visible=false; scene.add(wcGhost);
+(function(){
+ const M=(g,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(g,m); o.position.set(x,y,z);
+  if(sx!==undefined)o.scale.set(sx,sy,sz); wcGhost.add(o); return o;};
+ const faceM=new THREE.MeshBasicMaterial({map:headTex});
+ const hairM=new THREE.MeshBasicMaterial({color:0x0a0b0e});
+ const uniM =new THREE.MeshBasicMaterial({color:0x141a26});
+ const skinM=new THREE.MeshBasicMaterial({color:0xbfb3aa});
+ M(new THREE.SphereGeometry(.132,40,32),faceM, 0,1.60,0, 1,1.13,.99);        // 얼굴(피눈물)
+ M(new THREE.SphereGeometry(.135,20,16),hairM, 0,1.61,-.03, 1.02,1.10,1.0);  // 뒷머리
+ M(new THREE.CylinderGeometry(.128,.105,.62,18),hairM, 0,1.28,-.06);
+ M(new THREE.CylinderGeometry(.042,.028,.48,10),hairM, -.122,1.35,.03);
+ M(new THREE.CylinderGeometry(.042,.028,.48,10),hairM,  .122,1.35,.03);
+ M(new THREE.CylinderGeometry(.052,.058,.11,12),skinM, 0,1.47,0);            // 목
+ M(new THREE.SphereGeometry(.17,16,12),uniM, 0,1.30,0, 1.1,1.0,.7);          // 어깨
+ [-1,1].forEach(s=>M(new THREE.CylinderGeometry(.05,.045,.34,10),uniM, s*.19,1.16,.03));
+})();
+let wgT=0;
+const WC_SC=1.7, WC_HEADY=1.60, WC_NEAR=.42, WC_FAR=2.0;
+/* 현재 시선 기준으로 '눈앞 정중앙' 좌표를 계산 (매 프레임 갱신 → 돌리는 중에도 정면) */
+function wcTarget(dist,sc){
+ const fx=Math.sin(Pl.yaw), fz=-Math.cos(Pl.yaw);
+ return {x:camera.position.x+fx*dist, z:camera.position.z+fz*dist,
+         y:camera.position.y-WC_HEADY*sc+.02};
+}
+function wcGhostLunge(){
+ const s=wcTarget(WC_FAR,1);
+ wcGhost.position.set(s.x,s.y,s.z); wcGhost.scale.set(1,1,1);
+ wcGhost.rotation.y=-Pl.yaw; wcGhost.visible=true; wgT=0.0001;
+}
 /* 복도 바닥에 떨어진 필름 카메라 (교실 문을 열면 발견) */
 const camPick=new THREE.Group(); camPick.position.set(.35,y2+.03,16.6); camPick.rotation.y=-.9; camPick.visible=false; scene.add(camPick);
 const camGlow=new THREE.PointLight(0xffe0a8,0,2.6,2); camGlow.position.set(.35,y2+.5,16.6); scene.add(camGlow);
@@ -2210,8 +2249,49 @@ tvScreen.position.set(-4.6,y3+1.16,25.35); tvScreen.rotation.y=Math.PI; scene.ad
 const tvL=new THREE.PointLight(0x9fd8ff,0,3.2,2); tvL.position.set(-4.6,y3+1.3,24.9); scene.add(tvL);
 const broTVHit=new THREE.Mesh(new THREE.BoxGeometry(.55,.5,.4),new THREE.MeshBasicMaterial({visible:false}));
 broTVHit.position.set(-4.6,y3+1.16,25.35); broTVHit.visible=false; scene.add(broTVHit);
+it(broTVHit,'brotv','방송실 모니터');
 window.__tvScreen=tvScreen; window.__tvFaceTex=tvFaceTex; window.__tvL=tvL;
 window.__broTVHit=broTVHit;
+
+/* ===== 방송실 문 암호 패턴 — 디지털 숫자 '8'에서 비어 있는 칸 ===== */
+const SEGLIT={0:'abcdef',1:'bc',2:'abged',3:'abgcd',4:'fgbc',5:'afgcd',6:'afgecd',7:'abcf',8:'abcdefg',9:'abcdfg'};
+const segGap=d=>'abcdefg'.split('').filter(s=>SEGLIT[d].indexOf(s)<0);
+function drawSegs(x,px,py,w,h,segs,col){
+ const t=Math.max(3,w*.2), hh=(h-3*t)/2, has=s=>segs.indexOf(s)>=0;
+ x.fillStyle=col;
+ if(has('a')) x.fillRect(px+t,      py,           w-2*t, t);
+ if(has('g')) x.fillRect(px+t,      py+t+hh,      w-2*t, t);
+ if(has('d')) x.fillRect(px+t,      py+h-t,       w-2*t, t);
+ if(has('f')) x.fillRect(px,        py+t,         t,     hh);
+ if(has('b')) x.fillRect(px+w-t,    py+t,         t,     hh);
+ if(has('e')) x.fillRect(px,        py+2*t+hh,    t,     hh);
+ if(has('c')) x.fillRect(px+w-t,    py+2*t+hh,    t,     hh);
+}
+const tvCodeTex=cv(512,410,(x,w,h)=>{
+ x.fillStyle='#141a26'; x.fillRect(0,0,w,h);
+ // 위: 1~6 참조 패턴 (숫자 표기 없음 — 순서로만 제시)
+ const tw=48,th=66,gp=16,n=6, tot=n*tw+(n-1)*gp, sx=(w-tot)/2, sy=80;
+ for(let i=0;i<n;i++){ const d=i+1, px=sx+i*(tw+gp);
+  x.strokeStyle='#c8a24a'; x.lineWidth=2; x.strokeRect(px-9,sy-9,tw+18,th+18);
+  drawSegs(x,px,sy,tw,th,segGap(d),'#ffffff'); }
+ // 아래: 8·9·7 패턴  =  [?][?][?]  (세 자리)
+ const q=[8,9,7], qw=52,qh=74,qg=16, bw=44,bh=62,bg=12, qsy=245;
+ const lvis=(q.length*qw+(q.length-1)*qg)+18, rvis=(3*bw+2*bg)+16, eqw=36, gg=18;
+ const x0=(w-(lvis+gg+eqw+gg+rvis))/2, qsx=x0+9;
+ q.forEach((d,i)=>{ const px=qsx+i*(qw+qg);
+  x.strokeStyle='#c8a24a'; x.lineWidth=2; x.strokeRect(px-9,qsy-9,qw+18,qh+18);
+  drawSegs(x,px,qsy,qw,qh,segGap(d),'#ffffff'); });
+ x.fillStyle='#ffe07a'; x.font='bold 40px monospace'; x.textAlign='left'; x.textBaseline='middle';
+ x.fillText('=', x0+lvis+gg, qsy+qh/2);
+ const bsx=x0+lvis+gg+eqw+gg+8, by=qsy+(qh-bh)/2;
+ for(let i=0;i<3;i++){ const bx=bsx+i*(bw+bg);
+  x.strokeStyle='#c8a24a'; x.lineWidth=2; x.strokeRect(bx-8,by-8,bw+16,bh+16);
+  x.fillStyle='#ffe07a'; x.font='bold 42px monospace'; x.textAlign='center'; x.textBaseline='middle';
+  x.fillText('?', bx+bw/2, by+bh/2); }
+ x.textBaseline='alphabetic';
+ for(let yy=0;yy<h;yy+=3){ x.fillStyle='rgba(0,0,0,.18)'; x.fillRect(0,yy,w,1); }
+});
+window.__tvCodeTex=tvCodeTex;
 
 
 /* 백골 모형 — 처음부터 등장, 머리 없음. 뼈만(백골), 관절/사지를 곡선으로 조립 */
@@ -2486,8 +2566,9 @@ function say(name,line,dur){
 /* ---------- 거울 ---------- */
 let mirrorSeq=null;
 const MIR=['뒤','를',' ','보','지',' ','마'];
-function startMirror(){ if(G.fired.mirror){openModalRead('mirrorDone');return;}
- mirrorSeq={t:0,idx:0,yaw0:Pl.yaw,graceT:0}; dripL.intensity=.5; sWhis(); }
+function startMirror(){ if(mirrorSeq||wcPend>0) return;        // 진행 중/대기 중이면 무시
+ mirrorBase(); mTex.needsUpdate=true;                          // 글씨 지우고 처음부터 — 몇 번이든 반복
+ mirrorSeq={t:0,idx:0,yaw0:Pl.yaw,lastYaw:Pl.yaw,acc:0,graceT:0}; dripL.intensity=.5; sWhis(); }
 function mirrorLetter(){ const i=mirrorSeq.idx;
  if(MIR[i]!==' '){ mX.font="52px 'Malgun Gothic'";mX.fillStyle='rgba(228,242,246,.66)';mX.textAlign='center';
   const x0=110+i*48; mX.fillText(MIR[i],x0,140);
@@ -2496,11 +2577,16 @@ function mirrorLetter(){ const i=mirrorSeq.idx;
   mTex.needsUpdate=true;sSqueak();}
  mirrorSeq.idx++;}
 function angDiff(a,b){let d=(a-b)%(Math.PI*2);if(d>Math.PI)d-=Math.PI*2;if(d<-Math.PI)d+=Math.PI*2;return Math.abs(d);}
-function ghostAttack(){ mirrorSeq=null;G.fired.mirror=1;
+/* 뒤를 돌아본 순간엔 아무 일도 없다 — 1.5초 뒤에 덮친다 (놀람 극대화) */
+let wcPend=0;
+function ghostAttack(){ mirrorSeq=null; wcPend=1.5; }
+function wcStrike(){
  sSting();sScream();jolt();redFlash(.75);glitchFx();slamStalls();
  G.uiOpen=true;
+ wcGhostLunge();                                   // 피눈물 여학생이 눈앞 정중앙으로
  setTimeout(()=>{flickerOut(1.4);
   setTimeout(()=>{Pl.x=-7.6;Pl.z=14.2;Pl.y=FL[1];Pl.vy=0;Pl.yaw=Math.PI*1.5;Pl.pitch=0;
+   wcGhost.visible=false; wgT=0;
    G.uiOpen=false;toast('…정신을 차리니, 2학년 3반이다.');},900);},700);}
 
 /* ---------- 조명/카메라 ---------- */
@@ -2779,6 +2865,7 @@ function tryIt(){if(!G.target||G.uiOpen||G.over||!G.started||mirrorSeq)return;
  if(id==='burner'){ renderCraft(); return; }
  if(id==='skeleton'){ renderSkeleton(); return; }
  if(id==='broconsole'){ renderBroadcast(); return; }
+ if(id==='brotv'){ openTVCode(); return; }
  if(id==='hallexit'){ tryHallExit(); return; }
  if(id==='hallmirror'){ openHallMirror(); return; }
  if(id==='glocker'){ renderGLock(); return; }
@@ -3053,12 +3140,15 @@ photoTargets.push({obj:window.__skelPhotoHit,id:'sci',name:'머리를 되찾은 
  }});
 photoTargets.push({obj:window.__broTVHit,id:'bro',name:'출처 없는 목소리',
  onShot:()=>{
-  // 나를 안내하던 '방송'을 찍어 버렸다 → 검은 원 폭주
-  const D=ROOMDOOR['2_1']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; }
-  broBerserk=true; broBerserkT=0;                 // 루프에서 사이렌 반복
+  // 나를 안내하던 '방송'을 찍어 버렸다 → 검은 원 폭주 (사이렌 5회)
+  broBerserk=true; broBerserkT=6.3; broSirenN=1;
   sSiren(); jolt(); redFlash(.7); glitchFx();
+  // TV 화면이 바뀌며 세 자리 암호의 단서가 떠오른다
+  if(window.__tvScreen){ window.__tvScreen.material.map=window.__tvCodeTex;
+   window.__tvScreen.material.needsUpdate=true; }
+  if(window.__tvL) window.__tvL.intensity=1.15;
   toast('방송이 사진에 찍혔다 — 검은 원이 폭주하기 시작한다! 사이렌이 울린다');
-  setObj('중앙현관으로! — 마지막 한 장이 남았다');
+  setObj('방송실 문의 세 자리 자물쇠를 열어라');
   G.pending='p'+Object.keys(G.photos).filter(k=>k!=='hall'&&G.photos[k]).length;
  }});
 function gymClear(){
@@ -3149,6 +3239,41 @@ window.gymExitTry=()=>{
   toast('체육관 — 클리어');
   const n=Object.keys(G.photos).filter(k=>k!=='hall'&&G.photos[k]).length;
   setObj('사진 '+n+'/5 — 다음 장소로');
+ } else { sFail(); toast('고리가 꿈쩍도 하지 않는다.');
+  mb.classList.add('shake'); setTimeout(()=>mb.classList.remove('shake'),400); }
+};
+/* 방송실 모니터 — 화면을 크게 확대해서 본다 */
+function openTVCode(){
+ if(!G.photos.bro){ sFail(); toast('화면 너머에서, 무언가 이쪽을 보고 있다.'); return; }
+ G.uiOpen=true; setWide(true);
+ let src=''; try{ src=window.__tvCodeTex.image.toDataURL(); }catch(e){}
+ mb.innerHTML=`<div style="background:#0d1017;border:1px solid #22362a;padding:14px">
+   <h2 style="color:#f2d478;font-size:13px;letter-spacing:3px;margin-bottom:10px">방송실 모니터</h2>
+   <img src="${src}" alt="" style="width:100%;display:block;border:1px solid #22362a">
+   <button class="btn" onclick="closeModal()">물러선다</button></div>`;
+ modal.style.display='flex'; sClick();
+}
+/* 방송실 출구 자물쇠 (897) */
+const bxLock=[0,0,0];
+function renderBroExit(){
+ G.uiOpen=true; setWide(false);
+ const dials=bxLock.map((v,i)=>`<div class="dialCol"><button onclick="bxU(${i})">▲</button>
+  <div class="dl" id="bxd${i}">${v}</div><button onclick="bxD(${i})">▼</button></div>`).join('');
+ mb.innerHTML=`<h2>방송실 문 (안쪽)</h2>
+  <div class="story">문이 안에서 잠겼다. 다이얼 세 개.</div>
+  <div class="dials">${dials}</div>
+  <button class="btn accent" onclick="broExitTry()">고리를 당긴다</button>
+  <button class="btn" onclick="closeModal()">물러선다</button>`;
+ modal.style.display='flex';
+}
+window.bxU=i=>{bxLock[i]=(bxLock[i]+1)%10;sClick();document.getElementById('bxd'+i).textContent=bxLock[i];};
+window.bxD=i=>{bxLock[i]=(bxLock[i]+9)%10;sClick();document.getElementById('bxd'+i).textContent=bxLock[i];};
+window.broExitTry=()=>{
+ if(bxLock.join('')==='897'){
+  sOk(); closeModalRaw(); G.bro.exit=1;
+  const D=ROOMDOOR['2_1']; if(D){ D.locked=false; if(D.col){D.col.dead=true;D.col=null;} D.noAutoClose=true; openDoor(D); }
+  toast('방송실 — 클리어');
+  setObj('중앙현관으로! — 마지막 한 장이 남았다');
  } else { sFail(); toast('고리가 꿈쩍도 하지 않는다.');
   mb.classList.add('shake'); setTimeout(()=>mb.classList.remove('shake'),400); }
 };
@@ -3785,6 +3910,7 @@ function doorInteract(key){
  if(key==='r21' && D.locked){
   if(!G.bro.solved){ toast('출처 없는 목소리를 재현해, 그것을 사진에 담아야 문이 열린다.'); sFail(); return; }
   if(!G.photos.bro){ toast('떠오른 것을 아직 사진에 담지 않았다.'); sFail(); return; }
+  if(!G.bro.exit){ renderBroExit(); return; }
   D.locked=false; if(D.col){D.col.dead=true;D.col=null;} }
  if(D.locked){ toast('문이 안에서 잠겨 있다 — 이 방을 먼저 클리어해야 한다.'); sFail(); return; }
  if(D.closed) openDoor(D); else closeDoor(D,false);
@@ -3844,22 +3970,31 @@ ib.addEventListener('click',()=>{auInit();
  else{document.getElementById('intro').style.display='none';G.started=true;G.uiOpen=false;
   setObj('너무 어둡다 — 가방(I)을 열어 손전등을 장착하자');}});
 function win(){if(G.over)return;G.over=true;broBerserk=false;G.uiOpen=true;modal.style.display='none';sEsc();
- document.getElementById('endBody').innerHTML=`<h1 style="color:#8fe8a8">탈 출</h1>
+ // 현관문이 열리고 — 새하얀 빛이 밀려든다
+ const wo=document.getElementById('whiteout');
+ const endEl=document.getElementById('ending');
+ if(wo){ wo.style.transition='opacity 1.5s ease-in'; wo.style.opacity='1'; }
+ toast('문이 열린다 — 새하얀 빛이 쏟아진다');
+ document.getElementById('endBody').innerHTML=`<h1 style="color:#8fe8a8">탈출 성공</h1>
  <div class="story" style="text-align:left;white-space:pre-line">마지막 셔터가, 나 자신을 향해 터진 순간 —
 
 검은 원이, 처음으로 멈칫했다.
 기록된 것은 삼킬 수 없다. — 나조차도.
 
-현관문이 소리 없이 열리고, 어둠이 물처럼 걷힌다.
+현관문이 소리 없이 열리고,
+새하얀 빛이 어둠을 씻어 낸다.
 
 가방 속 다섯 장의 사진.
 <span style="color:#ff4a55">…마지막 한 장에만, 거울에도 비치지 않던 내가 찍혀 있다.</span></div>
  <div style="color:#f2d478;letter-spacing:3px;margin:14px 0">잔여 ${fmt(G.seconds)}</div>
  <button class="btn" onclick="location.reload()">처음으로</button>`;
- document.getElementById('ending').style.display='flex';}
+ setTimeout(()=>{
+  if(endEl){ endEl.style.zIndex='42'; endEl.style.display='flex'; }
+  if(wo){ wo.style.transition='opacity 1.2s ease-out'; wo.style.opacity='0'; }
+ },1700);}
 function lose(){if(G.over)return;G.over=true;G.uiOpen=true;
  modal.style.display='none';bcEl.style.display='none';sChime();sSting();
- document.getElementById('endBody').innerHTML=`<h1 style="color:#ff4a55">00:44</h1>
+ document.getElementById('endBody').innerHTML=`<h1 style="color:#ff4a55">01:14</h1>
  <div class="story" style="text-align:left;white-space:pre-line">띵— 동— 댕— 동.
 
 "일곱 번째 수업이 끝났습니다."
@@ -3898,7 +4033,7 @@ function dbgClearRoom(key){
    if(libDoor){ libDoor.locked=false; if(libDoor.col){libDoor.col.dead=true;libDoor.col=null;} } }
  else if(key==='gym'){ G.photos.gym=1; G.gym.clear=1; G.gym.card=1; G.gym.ballSilent=1; G.gym.been=1; }
  else if(key==='sci'){ G.photos.sci=1; G.sci.clear=1; G.sci.head=1; G.sci.been=1; }
- else if(key==='bro'){ G.photos.bro=1; G.bro.solved=1; G.bro.been=1; }
+ else if(key==='bro'){ G.photos.bro=1; G.bro.solved=1; G.bro.been=1; G.bro.exit=1; }
 }
 function _dbgWarp(w,name,tail){
  debugKit();
@@ -3989,6 +4124,19 @@ function loop(now){
  voidTex.offset.x+=dt*.008;voidTex.offset.y+=dt*.003;
  recL.material.emissiveIntensity=(Math.sin(t*4.5)>0)?1:.05;
  pulsers.forEach((m,i)=>m.material.emissiveIntensity=.3+.25*Math.sin(t*3+i*1.7));
+ // 화장실 귀신 돌진 (뒤를 본 순간 → 눈앞 정중앙에서 얼굴이 화면을 가득 채운다)
+ if(wgT>0){
+  wgT+=dt;
+  if(wgT>=1.0){ wcGhost.visible=false; wgT=0; }
+  else{
+   const k=Math.min(1,wgT/.14), e=k*k*(3-2*k);
+   const sc=1+(WC_SC-1)*e, dist=WC_FAR+(WC_NEAR-WC_FAR)*e;
+   const p=wcTarget(dist,sc), j=(wgT>.14)?.035:0;
+   wcGhost.position.set(p.x+(Math.random()-.5)*j, p.y+(Math.random()-.5)*j, p.z+(Math.random()-.5)*j);
+   wcGhost.scale.set(sc,sc,sc);
+   wcGhost.rotation.y=-Pl.yaw;              // 항상 나를 정면으로 마주본다
+  }
+ }
  // 백골 돌진 점프스케어 (가만있던 백골 → 카메라로 확 확대 → 원위치)
  if(lunge>0 && manneHome){
   lunge+=dt;
@@ -4070,7 +4218,10 @@ function loop(now){
  if(broBerserk && !G.over){
   broBerserkT-=dt;
   if(Math.random()<dt*1.2){ redFlash(.22); }
-  if(broBerserkT<=0){ broBerserkT=6.3; sSiren(); glitchFx(); jolt(); }
+  if(broBerserkT<=0){
+   if(broSirenN>=BRO_SIREN_MAX){ broBerserk=false; }   // 5회 울린 뒤 조용해진다
+   else { broSirenN++; broBerserkT=6.3; sSiren(); glitchFx(); jolt(); }
+  }
  }
 
  if(mirrorSeq){
@@ -4078,8 +4229,15 @@ function loop(now){
   const due=.4+mirrorSeq.idx*.55;
   if(mirrorSeq.idx<MIR.length&&mirrorSeq.t>due)mirrorLetter();
   if(mirrorSeq.idx>=MIR.length){mirrorSeq.graceT+=dt;
-   if(mirrorSeq.graceT>4){mirrorSeq=null;G.fired.mirror=1;sWhis();}}
-  if(mirrorSeq&&angDiff(Pl.yaw,mirrorSeq.yaw0)>2.2)ghostAttack();}
+   if(mirrorSeq.graceT>4){mirrorSeq=null;sWhis();}}
+  if(mirrorSeq){                                   // 한 방향으로 누적 180° 돌아보면 발동
+   let dy=Pl.yaw-mirrorSeq.lastYaw;
+   while(dy>Math.PI)dy-=Math.PI*2; while(dy<-Math.PI)dy+=Math.PI*2;
+   mirrorSeq.acc+=dy; mirrorSeq.lastYaw=Pl.yaw;
+   if(Math.abs(mirrorSeq.acc)>=Math.PI) ghostAttack();
+  }}
+ // 뒤돌아본 뒤 1.5초의 정적 → 그 다음 덮친다
+ if(wcPend>0){ wcPend-=dt; if(wcPend<=0){ wcPend=0; wcStrike(); } }
 
  if(G.started&&!G.over){
   G.seconds-=dt;
